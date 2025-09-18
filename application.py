@@ -1,0 +1,36 @@
+from flask import Flask,render_template,request
+from src.pipeline.predict_pipeline import CustomData,PredictPipeline
+
+application=Flask(__name__)
+
+
+@application.route('/')
+def index():
+    return render_template('index.html')
+
+@application.route('/predictdata',methods=['GET','POST'])
+def predict_datapoint():
+    if request.method=='GET':
+        return render_template('home.html')
+    else:
+        data=CustomData(
+            gender=request.form.get('gender'),
+            lunch=request.form.get('lunch'),
+            reading_score=float(request.form.get('writing_score')),
+            writing_score=float(request.form.get('reading_score')),
+            parental_level_of_education=request.form.get('parental_level_of_education'),
+            race_ethnicity=request.form.get('race_ethnicity'),
+            test_preparation_course=request.form.get('test_preparation_course')
+        )
+        pred_df=data.get_data_as_dataframe()
+        print(pred_df)
+        print("Before Prediction")
+        predict_pipeline=PredictPipeline()
+        print("Mid Prediction")
+        results=predict_pipeline.predict(pred_df)
+        print("After Prediction")
+        return render_template('home.html',results=results[0])
+    
+if __name__=='__main__':
+    application.run(host='0.0.0.0')
+
